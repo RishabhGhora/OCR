@@ -8,7 +8,9 @@ from pytesseract import Output
 from matplotlib import pyplot as plt
 
 EAST = 'east/frozen_east_text_detection.pb'
+# nltk.download('words')
 english_vocab = set(w.lower() for w in nltk.corpus.words.words())
+
 
 def get_text(image, padding=0):
     #Saving a original image and shape
