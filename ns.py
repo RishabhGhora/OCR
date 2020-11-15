@@ -8,6 +8,7 @@ from pytesseract import Output
 from matplotlib import pyplot as plt
 
 EAST = 'east/frozen_east_text_detection.pb'
+# nltk.download('words')
 english_vocab = set(w.lower() for w in nltk.corpus.words.words())
 
 def get_text(image, padding=0):
@@ -194,5 +195,5 @@ def get_score(text):
 def hasNumbers(inputString):
     return any(char.isdigit() for char in inputString)
 
-#img = np.load('stop-2.npy')
+#img = np.load('crowder.npy')
 #print(get_ns_text(img))
