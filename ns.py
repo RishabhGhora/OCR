@@ -1,3 +1,4 @@
+# Load the necessary modules 
 import numpy as np
 import cv2
 import string
@@ -7,11 +8,20 @@ import pytesseract
 from pytesseract import Output
 from matplotlib import pyplot as plt
 
-EAST = 'east/frozen_east_text_detection.pb'
+# Global variables 
+# Uncomment the line below on first use to
+# Download a dictionary used in the postprocesssing stage 
 # nltk.download('words')
 english_vocab = set(w.lower() for w in nltk.corpus.words.words())
+EAST = 'east/frozen_east_text_detection.pb'
 
 def get_text(image, padding=0):
+    """
+    Gets the text from a natural scene image
+    image: image inputed by the user 
+    padding: padding to be applied on the bounding boxes
+    output: returns detected text
+    """
     #Saving a original image and shape
     orig = image.copy()
     (origH, origW) = image.shape[:2]
@@ -43,7 +53,7 @@ def get_text(image, padding=0):
 	    "feature_fusion/Conv_7/Sigmoid",
 	    "feature_fusion/concat_3"]
 
-    #Forward pass the blob from the image to get the desired output layers
+    # Forward pass the blob from the image to get the desired output layers
     net.setInput(blob)
     (scores, geometry) = net.forward(layerNames)
 
@@ -51,7 +61,7 @@ def get_text(image, padding=0):
     (boxes, confidence_val) = predictions(scores, geometry)
     boxes = non_max_suppression(np.array(boxes), probs=confidence_val)
 
-    ##Text Detection and Recognition 
+    # Text Detection and Recognition 
     # initialize the list of results
     results = []
 
@@ -88,8 +98,17 @@ def get_text(image, padding=0):
     return output
     
 
-## Returns a bounding box and probability score if it is more than minimum confidence
 def predictions(prob_score, geo):
+    """
+    Gets the bounding boxes from the 
+    East net output layers and returns it if 
+    the probability score is more than the 
+    0.5 minimum confidence level
+    prob_score: probability score
+    geo: geometry fron East
+    boxes: 4 corners of bounding boxes as coordinates
+    confidence_val: confidence levels 
+    """
     (numR, numC) = prob_score.shape[2:4]
     boxes = []
     confidence_val = []
@@ -131,6 +150,13 @@ def predictions(prob_score, geo):
     return (boxes, confidence_val)
 
 def display_image(results, orig):
+    """
+    Displays the results by drawing bounding boxes
+    on top of original image and detected text
+    results: coordinates for the bounding boxes
+    and extracted text
+    orig: copy of the original image
+    """
     #Display the image with bounding box and recognized text
     orig_image = orig.copy()
 
@@ -151,6 +177,13 @@ def display_image(results, orig):
     plt.show()
 
 def get_ns_text(image):
+    """
+    Gets text from a natural scene image by applying 2 
+    filters, blur and Otsu threshold with padding and 
+    no padding and returns the best scoring text
+    image: image inputed by the user 
+    text: returns detected text
+    """
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (3,3), 0)
     blur_image = cv2.cvtColor(blur, cv2.COLOR_GRAY2RGB)
@@ -180,6 +213,13 @@ def get_ns_text(image):
         return thresh_text
 
 def get_score(text):
+    """
+    Calculate a score of the text by getting how many 
+    words in the text are english words divided by the 
+    total number of words
+    text: text to be evaluated
+    percent: calculated score is returned 
+    """
     words = text.split()
     en_count = 0.0
     for word in words:
@@ -193,7 +233,10 @@ def get_score(text):
     return percent
 
 def hasNumbers(inputString):
+    """
+    Helper function that checks if input string 
+    has any numbers 
+    inputString: string to be evaluated
+    boolean: returns True or False
+    """
     return any(char.isdigit() for char in inputString)
-
-#img = np.load('crowder.npy')
-#print(get_ns_text(img))

@@ -1,7 +1,16 @@
-import imageio
+# Load the necessary modules 
 import numpy as np
 
 def fillIsland(arr, i, j):
+    """
+    Uses a depth first search on a boolean matrix 
+    to fill in an island of Trues with False 
+    and returns the bounds 
+    arr: a 2d boolean numpy array
+    i: the y coordinate for a point that is true
+    j: the x coordinate for a point that is true
+    minx, maxx, miny, maxy: returns the bounds of the island
+    """
     q = [(i,j)]
     minx = i
     miny = j
@@ -21,8 +30,14 @@ def fillIsland(arr, i, j):
                         q.append((i+a-1,j+b-1))
     return minx, maxx, miny, maxy
 
-
 def findIslands(arr):
+    """
+    Finds all the islands in a boolean matrix
+    arr: a boolean matrix
+    res: returns a list of bounds for the islands, 
+    along with a coordinate that is contained in them
+    so that they can be found again
+    """
     res = []
     for i in range(arr.shape[0]):
         for j in range(arr.shape[1]):
@@ -31,11 +46,25 @@ def findIslands(arr):
     return res
 
 def overlap(a,b,power):
+    """
+    Finds the overlap between the y values of 
+    two islands as a fraction and puts it to the 
+    power of power
+    a: the first island's bounds
+    b: the second island's bounds 
+    power: the power to put the result to
+    returns the overlap to the provided power
+    """
     if a[0] > b[1] or a[1] < b[0]:
         return 0
     return ((min(a[1],b[1])-max(a[0],b[0]))/(max(a[1],b[1])-min(a[0],b[0])))**power
 
 def isolateText(img):
+    """
+    Converts image to islands
+    img: the image inputed by the user
+    combined: the island filtered image
+    """
     origislands = []
     C = 180
     F2 = np.logical_and(np.logical_and(img[:,:,0] > C, img[:,:,1] > C), img[:,:,2] > C).reshape([img.shape[0],img.shape[1]])

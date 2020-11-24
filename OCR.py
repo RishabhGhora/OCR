@@ -1,3 +1,4 @@
+# Load the necessary modules 
 import cv2
 import pytesseract
 from pytesseract import Output
@@ -14,7 +15,14 @@ english_vocab = set(w.lower() for w in nltk.corpus.words.words())
 
 
 def preprocessing(img, thresh_value):
-    # Grayscale, Gaussian blur, Otsu's threshold
+    """
+    Preprocesses the input image by converting to 
+    grayscale, applying a threshold, bluring the image
+    and then applying Otsu's threshold
+    img: image inputed by the user 
+    thresh_value: value of thresholding to be applied 
+    thresh: filtered image is returned
+    """
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = ((gray/255)**thresh_value * 255).astype(np.uint8)
     blur = cv2.GaussianBlur(gray, (3,3), 0)
@@ -23,6 +31,14 @@ def preprocessing(img, thresh_value):
     return thresh
 
 def get_cgt_text(img, thresh_value):
+    """
+    Extracts text from an image by filtering the 
+    image then running the image through pytesseract
+    and cleaning the text outputted  
+    img: image inputed by the user 
+    thresh_value_ value of thresholding to be applied 
+    data: extracted text is returned
+    """
     thresh = preprocessing(img, thresh_value)
     data = pytesseract.image_to_string(thresh, lang='eng', config='--psm 6')
     allowed = string.ascii_uppercase+string.ascii_lowercase + """?'."!"""
@@ -46,6 +62,13 @@ def get_cgt_text(img, thresh_value):
 
 
 def get_pdf_text(img):
+    """
+    Extracts text from an image without 
+    using any filters with regular 
+    pytesseract method
+    img: image inputed by the user 
+    text: extracted text is returned
+    """
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
     d = pytesseract.image_to_data(gray, output_type=Output.DICT)
     text = ''
@@ -54,6 +77,13 @@ def get_pdf_text(img):
     return text
 
 def get_island_text(img):
+    """
+    Extracts text from an image by filtering
+    with our island filter, running through pytesseract
+    and cleaning the text outputted  
+    img: image inputed by the user 
+    data: extracted text is returned 
+    """
     island_img = isolateText(img)
     data = pytesseract.image_to_string(island_img, lang='eng', config='--psm 6')
     allowed = string.ascii_uppercase+string.ascii_lowercase + """?'."!"""
@@ -76,6 +106,14 @@ def get_island_text(img):
     return data
 
 def get_score(text):
+    """
+    Calculate a score of the text by getting how many 
+    words in the text are english words divided by the 
+    total number of words
+    text: text to be evaluated
+    percent: calculated score is returned 
+    under_limit_word: number of words under 2 characters
+    """
     words = text.split()
     en_count = 0.0
     under_limit_word = 0
@@ -97,9 +135,23 @@ def get_score(text):
     return percent, under_limit_word
 
 def hasNumbers(inputString):
+    """
+    Helper function that checks if input string 
+    has any numbers 
+    inputString: string to be evaluated
+    boolean: returns True or False
+    """
     return any(char.isdigit() for char in inputString)
     
 def get_text(img):
+    """
+    Method that takes an input image and 
+    applies 3 different filters on it, 
+    extracts the text with pytesseract, 
+    and returns the text with the best score. 
+    img: image inputed by the user 
+    text: returns best scoring text
+    """
     cgt_text_20 = get_cgt_text(img, 20)
     cgt_text_100 = get_cgt_text(img, 100)
     pdf_text = get_pdf_text(img)
