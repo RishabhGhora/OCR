@@ -5,6 +5,7 @@ import string
 import numpy as np
 import nltk
 from ns import get_ns_text
+from island import isolateText
 
 # Uncomment the line below on first use to
 # Download a dictionary used in the postprocesssing stage 
@@ -52,6 +53,28 @@ def get_pdf_text(img):
         text = text + word + ' '
     return text
 
+def get_island_text(img):
+    island_img = isolateText(img)
+    data = pytesseract.image_to_string(island_img, lang='eng', config='--psm 6')
+    allowed = string.ascii_uppercase+string.ascii_lowercase + """?'."!"""
+    lines = data.split("\n")
+    res = []
+    for line in lines:
+        t = []
+        correct = 0
+        for i in line:
+            if i in allowed:
+                t.append(i)
+                correct+=1
+            elif i in "1234567890":
+                t.append(i)
+            elif len(t) > 0 and t[-1] != " ":
+                t.append(" ")
+        if correct > len(line)*3/5 and correct > 2:
+            res.append("".join(t))
+    data = "\n".join(res)
+    return data
+
 def get_score(text):
     words = text.split()
     en_count = 0.0
@@ -80,13 +103,19 @@ def get_text(img):
     cgt_text_20 = get_cgt_text(img, 20)
     cgt_text_100 = get_cgt_text(img, 100)
     pdf_text = get_pdf_text(img)
+    island_text = get_island_text(img)
     cgt_text_20_score,x = get_score(cgt_text_20)
     cgt_text_100_score,y = get_score(cgt_text_100)
     pdf_text_score,z = get_score(pdf_text)
+    island_text_score, i = get_score(island_text)
 
     #print('cgt_text_20: {} \n score: {} \n under limit words: {} \n len: {}'.format(cgt_text_20, cgt_text_20_score,x, len(cgt_text_20)))
     #print('cgt_text_100: {} \n score: {} \n under limit words: {}\n len: {}'.format(cgt_text_100, cgt_text_100_score,y, len(cgt_text_100)))
     #print('pdf_text: {} \n score: {} \n under limit words: {}'.format(pdf_text, pdf_text_score,z))
+    #print('island_text: {} \n score: {} \n under limit words: {}'.format(island_text, island_text_score,i))
+
+    if island_text_score >= cgt_text_20_score and island_text_score >= cgt_text_100_score and island_text_score >= pdf_text_score and island_text_score != 0:
+        return island_text
 
     if cgt_text_20_score == cgt_text_100_score == 0 or (pdf_text_score < 0.3 and cgt_text_100_score < 0.3):
         ns_text = get_ns_text(img)

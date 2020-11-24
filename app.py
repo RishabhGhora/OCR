@@ -92,11 +92,11 @@ def parse_contents(contents, filename, date):
         # that is supplied by the upload
         html.Img(src=contents, style={'padding-top': '1%'}),
         html.Br(),html.Br(),
-        html.H5("Detected Text: " + text, id='txt', key=text),
+        html.H5("Detected Text: " + text, id='txt', key=text, style={'padding-top': '-50px'}),
         html.Div([html.Button("Download .txt File", id="btn"), Download(id="download")]),
         html.Hr(),
     ], style={
-        'text-align': 'center'
+        'text-align': 'center',
     })
 
 # if input image is too big to fit on screen, will resize the display only — doesn't interfere with OCR process
