@@ -71,9 +71,9 @@ app.layout = html.Div([
         multiple=False
     ), dcc.Loading(
             id="loading-1",
-            type="circle",
+            type="cube",
+            fullscreen=True,
             children=html.Div(id="output-image-upload"),
-            style={'padding-top': '5em'}
     )], style={
         'text-align': 'center',
         'margin-left': '20%',
